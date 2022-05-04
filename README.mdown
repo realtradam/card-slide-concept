@@ -1,4 +1,8 @@
+![screenshot](https://github.com/realtradam/card-slide-concept/blob/master/screenshot.png?raw=true)
+
 # Card Slide Concept
+
+### [Play Here](https://tradam.itch.io/card-slide-prototype)
 
 A proof of concept of a mechanic implemented in ruby where cards slide to separate whenever they are placed overlapping.
 
