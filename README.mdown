@@ -1,0 +1,9 @@
+# Card Slide Concept
+
+A proof of concept of a mechanic implemented in ruby where cards slide to separate whenever they are placed overlapping.
+
+Many optimizations can still be made so the performance could be improved:
+
+1. Implement a grid or a quadtree for collision checking.
+2. Smarter reuse of objects so that less garbage collection needs to occur.
+3. More efficient C to Ruby bindings.
