@@ -3,13 +3,16 @@ include Test # temporary WiP name for raylib bindings
 
 WHITE = Color.new(r: 255, g: 255, b: 255, a: 255)
 BLACK = Color.new(r: 0, g: 0, b: 0, a: 255)
+LIGHTGRAY = Color.new(r: 235, g: 235, b: 235, a: 255)
+DARKGRAY = Color.new(r: 200, g: 200, b: 200, a: 255)
+VERYDARKGRAY = Color.new(r: 150, g: 150, b: 150, a: 255)
 
-CardWidth = 80
+CardWidth = 55
 CardHeight = (CardWidth * (4.0/3.0)).to_i
 
 # By how many steps to subdivide
 # more can be smoother but needs more time to process
-SmoothenSteps = 3
+SmoothenSteps = 2
 
 ScreenWidth = 900
 ScreenHeight = 650
@@ -37,6 +40,35 @@ Test.target_fps = 60
 
 DefaultOrigin = Vector2.new(x: 0, y: 0)
 
+ButtonHeight = 35
+ButtonWidth = 120
+ButtonFontSize = 20
+
+Button = Struct.new(:rec, :text).new(Rectangle.new(x: (ScreenWidth / 2) - (ButtonWidth / 2), y: ScreenHeight - (ScreenBorder / 2) - (ButtonHeight / 2), width: ButtonWidth, height: ButtonHeight), "Add Card")
+
+Button.instance_eval do
+  def draw
+    tmp_color = LIGHTGRAY
+    if check_collision_point_rec(rec: self.rec, point: mouse_position)
+      if mouse_button_down?(0)
+        tmp_color = VERYDARKGRAY
+      else
+        tmp_color = DARKGRAY
+      end
+    end
+    draw_rectangle_pro(rec: self.rec, origin: DefaultOrigin, rotation: 0, color: tmp_color)
+    draw_rectangle_lines_ex(rec: self.rec, line_thick: 2, color: BLACK)
+    draw_text(text: self.text, pos_x: self.rec.x + 12, pos_y: self.rec.y + 8, font_size: ButtonFontSize, color: BLACK)
+  end
+  def clicked?
+    if mouse_button_pressed?(0) && check_collision_point_rec(rec: self.rec, point: mouse_position)
+      return true
+    else
+      return false
+    end
+  end
+end
+
 class Card
   Width = CardWidth
   Height = CardHeight
@@ -61,6 +93,7 @@ class Card
     self.dragged = false
     self.momentum = [0.0, 0.0]
     Card::Objects.push self
+    Resolver.push [self]
   end
 
   # class methods
@@ -201,7 +234,7 @@ ColorRange = (0..255).to_a
 
 CardNames = ('A'..'ZZ').to_a.reverse
 
-15.times do
+10.times do
   Card.new(text: CardNames.pop, color: Color.new(r: ColorRange.sample, g: ColorRange.sample, b: ColorRange.sample, a: 255))
 end
 
@@ -219,6 +252,15 @@ while !window_should_close do
   end
   Card.draw
 
+  Button.draw
+
+  unless CardNames.empty?
+    if Button.clicked?
+      Card.new(text: CardNames.pop, color: Color.new(r: ColorRange.sample, g: ColorRange.sample, b: ColorRange.sample, a: 255))
+    end
+  end
+
+  draw_text(text: "Cards: #{Card::Objects.count}", pos_x: ScreenWidth - 120, pos_y: 10, font_size: 21, color: BLACK)
   draw_fps(pos_x: 10, pos_y: 10)
 
   end_drawing
