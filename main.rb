@@ -3,8 +3,6 @@ include Test # temporary WiP name for raylib bindings
 
 WHITE = Color.new(r: 255, g: 255, b: 255, a: 255)
 BLACK = Color.new(r: 0, g: 0, b: 0, a: 255)
-GRAY = Color.new(r: 100, g: 100, b: 100, a: 255)
-
 
 CardWidth = 80
 CardHeight = (CardWidth * (4.0/3.0)).to_i
@@ -16,11 +14,11 @@ SmoothenSteps = 3
 ScreenWidth = 900
 ScreenHeight = 650
 
-# how far the border is from the edge of the screen
+# How far the border is from the edge of the screen
 ScreenBorder = 60
 ScreenBorderThickness = 5
 
-# visual game border
+# Visual game border
 BorderRec = Rectangle.new(
   x: ScreenBorder - ScreenBorderThickness,
   y: ScreenBorder - ScreenBorderThickness,
@@ -40,17 +38,16 @@ Test.target_fps = 60
 DefaultOrigin = Vector2.new(x: 0, y: 0)
 
 class Card
-  # size of cards
   Width = CardWidth
   Height = CardHeight
 
-  # list of valid coordinates a card can spawn
+  # List of valid coordinates a card can spawn
   ValidSpawnRange = [(ScreenBorder..(ScreenWidth-Card::Width-ScreenBorder)).to_a, (ScreenBorder..(ScreenHeight-Card::Height-ScreenBorder)).to_a] 
 
-  # stores any new cards that are created
+  # Stores any new cards that are created
   Objects = [] 
 
-  # stores groups of cards that are overlapping
+  # Stores groups of cards that are overlapping
   Resolver = [] 
 
   attr_accessor :rec, :text, :color, :dragged, :momentum
@@ -79,14 +76,12 @@ class Card
       # if click -> find if you are clicking one -> if so set it click
       if mouse_button_pressed?(0)
         Card::Objects.reverse_each do |card|
-          #mouse_position # Vector2
-          #mouse_delta # Vector2
           if check_collision_point_rec(point: mouse_position, rec: card.rec)
             self.card_dragged = card
             card.dragged = true
             self.card_offset = [card.rec.x - mouse_x, card.rec.y - mouse_y]
 
-            # place card at front of array(to draw first)
+            # Place card at end of array(to draw on top)
             Card::Objects.push Card::Objects.delete(card)
             break
           end
@@ -101,8 +96,6 @@ class Card
         )
         # if let go of click -> remove click state
       elsif mouse_button_up?(0) && self.card_dragged
-        #card_dragged.rec.x = self.card_offset[0] + mouse_x
-        #card_dragged.rec.y = self.card_offset[1] + mouse_y
         card_dragged.rec = Rectangle.new(
           x: (self.card_offset[0] + mouse_x).clamp(MaxCardWidth, MinCardWidth),
           y: (self.card_offset[1] + mouse_y).clamp(MaxCardHeight, MinCardHeight),
@@ -165,10 +158,14 @@ class Card
             # move from center
             # direction
             dir = [card.rec.x - center[0], card.rec.y - center[1]]
-            dir[0] = dir[0] / Math.sqrt((dir[0] ** 2) + (dir[1] ** 2))
-            dir[1] = dir[1] / Math.sqrt((dir[0] ** 2) + (dir[1] ** 2))
 
-            # smoothens out the movement
+            # Check to prevent NaN
+            unless dir[0] == 0.0 && dir[1] == 0.0
+              dir[0] = dir[0] / Math.sqrt((dir[0] ** 2) + (dir[1] ** 2))
+              dir[1] = dir[1] / Math.sqrt((dir[0] ** 2) + (dir[1] ** 2))
+            end
+
+            # Smoothens out the movement
             card.momentum[0] += dir[0]
             card.momentum[1] += dir[1]
             card.momentum[0] /= SmoothenSteps.to_f
@@ -179,11 +176,9 @@ class Card
               (card.rec.y + card.momentum[1]).clamp(MaxCardHeight, MinCardHeight),
             ]
 
-
-
             card.rec = Rectangle.new(
-              x: dest[0],#card.rec.x + dir[0],
-              y: dest[1],#card.rec.y + dir[1],
+              x: dest[0],
+              y: dest[1],
               width: card.rec.width,
               height: card.rec.height,
             )
