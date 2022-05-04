@@ -260,7 +260,7 @@ while !window_should_close do
     end
   end
 
-  draw_text(text: "Cards: #{Card::Objects.count}", pos_x: ScreenWidth - 120, pos_y: 10, font_size: 21, color: BLACK)
+  draw_text(text: "Cards: #{Card::Objects.count}", pos_x: ScreenWidth - 120, pos_y: 10, font_size: 20, color: BLACK)
   draw_fps(pos_x: 10, pos_y: 10)
 
   end_drawing
