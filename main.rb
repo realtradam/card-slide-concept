@@ -72,9 +72,60 @@ class Card
         #card_dragged.rec.x = self.card_offset[0] + mouse_x
         #card_dragged.rec.y = self.card_offset[1] + mouse_y
         card_dragged.rec = Rectangle.new(x: (self.card_offset[0] + mouse_x), y: (self.card_offset[1] + mouse_y), width: card_dragged.rec.width, height: card_dragged.rec.height)
+        Resolver.push [card_dragged]
         self.card_dragged.dragged = false
         self.card_dragged = false
         self.card_offset = false
+      end
+    end
+
+    def check_overlap
+      # check overlaps
+      if !Resolver.empty?
+        old_resolver = Resolver.inject(:+)
+        Resolver.clear
+        old_resolver.each do |colliding_card|
+          Resolver.push []
+          Card::Objects.each do |card|
+            next if card == colliding_card
+            if check_collision_recs(rec1: card.rec, rec2: colliding_card.rec)
+              old_resolver.delete card
+              Resolver.last.push colliding_card unless Resolver.last.include? colliding_card
+              Resolver.last.push card
+            end
+          end
+          Resolver.pop if Resolver.last.empty?
+        end
+      end
+    end
+
+    def resolve_overlap
+      if !Resolver.empty?
+
+        Resolver.each do |segment|
+          center = [0.0, 0.0]
+          segment.each do |card|
+            # get center point
+            center[0] += card.rec.x
+            center[1] += card.rec.y
+          end
+          center[0] /= segment.length
+          center[1] /= segment.length
+          segment.each do |card|
+            # move from center
+            # direction
+            dir = [card.rec.x - center[0], card.rec.y - center[1]]
+            dir[0] = dir[0] / Math.sqrt((dir[0] ** 2) + (dir[1] ** 2))
+            dir[1] = dir[1] / Math.sqrt((dir[0] ** 2) + (dir[1] ** 2))
+
+            card.rec = Rectangle.new(
+              x: card.rec.x + dir[0],
+              y: card.rec.y + dir[1],
+              width: card.rec.width,
+              height: card.rec.height,
+            )
+          end
+        end
       end
     end
 
@@ -101,6 +152,8 @@ while !window_should_close do
 
   Card.draw
   Card.resolve_drag
+  Card.check_overlap
+  Card.resolve_overlap
 
   #draw_text(text: "Congrats! You created your first window!", pos_x: 190, pos_y: 200, font_size: 20, color: GRAY)
 
